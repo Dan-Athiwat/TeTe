@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cloud Chat — ชุมชนข้ามเครื่อง</title>
+  <title>Cloud Chat — ชุมชนข้ามเครื่อง (เวอร์ชันแก้บัคครบ)</title>
   <style>
     :root {
       --bg: #0f1220; --panel: #171a2b; --accent: #4f7cff; --text: #e9ecff;
-      --muted: #9aa3c6; --danger: #ff4f6b; --success: #3bd07b; --warn: #ffb347; --border: #252a40;
+      --muted: #c2c8e6; --danger: #ff4f6b; --success: #3bd07b; --warn: #ffb347; --border: #252a40;
+      --input-bg: #0f1330;
     }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Thai", "Noto Sans", Arial, "Helvetica Neue", Helvetica, sans-serif; }
@@ -20,7 +21,7 @@
     .me-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 35vw; }
     .spacer { flex: 1; }
     .top-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .btn { background: var(--accent); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn { background: var(--accent); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--text); }
     .btn.secondary { background: #2c3354; }
     .btn.outline { background: transparent; border: 1px solid var(--border); }
     .btn.danger { background: var(--danger); }
@@ -28,8 +29,8 @@
     .btn.success { background: var(--success); color: #07130a; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     main { display: flex; flex: 1; min-height: 0; }
-    aside.sidebar { width: 280px; border-right: 1px solid var(--border); background: #121529; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-    .searchbox input { width: 100%; background: #0f1330; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; outline: none; }
+    aside.sidebar { width: 300px; border-right: 1px solid var(--border); background: #121529; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .searchbox input { width: 100%; background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; outline: none; }
     .friend-list { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
     .friend-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; }
     .friend-item:hover { background: #171a33; }
@@ -41,30 +42,29 @@
     .chat-title { font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .chat-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
     .chat-body { flex: 1; overflow-y: auto; padding: 14px; background: radial-gradient(1200px 600px at 20% 0%, #111633 0%, #0f1220 50%, #0f1220 100%); }
-    .msg { max-width: 72%; padding: 8px 10px; border-radius: 12px; margin-bottom: 8px; display: inline-block; word-wrap: break-word; border: 1px solid var(--border); background: #12162f; }
+    .msg { max-width: 72%; padding: 8px 10px; border-radius: 12px; margin-bottom: 8px; display: inline-block; word-wrap: break-word; border: 1px solid var(--border); background: #12162f; color: var(--text); }
     .msg.me { background: #243063; margin-left: auto; }
     .msg .meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
     .msg img.chat-img { max-width: 100%; border-radius: 10px; border: 1px solid var(--border); display: block; margin-top: 6px; }
     .chat-input { display: flex; gap: 8px; padding: 8px; border-top: 1px solid var(--border); background: #121529; flex-wrap: wrap; }
-    .chat-input input[type="text"] { flex: 1; min-width: 180px; background: #0f1330; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; outline: none; }
-    .chat-input input[type="file"] { display: inline-block; background: transparent; border: 1px dashed var(--border); border-radius: 8px; padding: 6px; }
-    .login { max-width: 520px; margin: 10vh auto; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+    .chat-input input[type="text"] { flex: 1; min-width: 180px; background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; outline: none; }
+    .chat-input input[type="file"] { display: inline-block; background: transparent; border: 1px dashed var(--border); border-radius: 8px; padding: 6px; color: var(--text); }
+    .login { max-width: 560px; margin: 10vh auto; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
     .login h1 { margin: 0 0 10px 0; font-size: 20px; }
     .login .row { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
-    .login input[type="text"] { flex: 1; min-width: 180px; background: #0f1330; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; outline: none; }
+    .login input[type="text"] { flex: 1; min-width: 180px; background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; outline: none; }
+    .login input::placeholder, .chat-input input::placeholder, .searchbox input::placeholder { color: #bfc7e8; opacity: 0.9; }
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 20; }
     .modal-backdrop.show { display: flex; }
-    .modal { width: 520px; max-width: 92vw; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+    .modal { width: 560px; max-width: 92vw; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
     .modal h3 { margin: 8px 0 12px 0; font-size: 18px; }
-    .modal .row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .modal input[type="text"] { flex: 1; background: #0f1330; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; outline: none; }
+    .modal .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .modal input[type="text"] { flex: 1; background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; outline: none; }
     .request-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; background: #13173b; }
     .request-actions { margin-left: auto; display: flex; gap: 6px; }
-    /* Toast */
     .toast { position: fixed; right: 12px; bottom: 12px; background: #12162f; border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: flex; gap: 10px; align-items: center; box-shadow: 0 6px 18px rgba(0,0,0,0.35); z-index: 30; }
     .toast .txt { max-width: 58vw; }
-    /* Responsive */
-    @media (max-width: 980px) { aside.sidebar { width: 240px; } .me-name { max-width: 40vw; } }
+    @media (max-width: 980px) { aside.sidebar { width: 260px; } .me-name { max-width: 40vw; } }
     @media (max-width: 720px) { main { flex-direction: column; } aside.sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); } .chat-input input[type="text"] { min-width: 120px; } .me-name { max-width: 52vw; } }
   </style>
 </head>
@@ -72,8 +72,8 @@
   <div class="app" id="app">
     <!-- Login -->
     <div class="login" id="loginView">
-      <h1>ลงชื่อเข้าใช้ (โหมดชุมชน)</h1>
-      <p style="color:var(--muted)">พิมพ์ชื่อของคุณ (หรือชื่อของใครก็ได้ในชุมชน) และเลือกรูปโปรไฟล์ แล้วกดตกลง</p>
+      <h1>ลงชื่อเข้าใช้ (ชุมชน)</h1>
+      <p style="color:var(--muted)">พิมพ์ชื่อของคุณ (หรือชื่อใครก็ได้ในชุมชน) เลือกรูปโปรไฟล์ แล้วกดตกลง</p>
       <div class="row">
         <img id="loginAvatarPreview" class="avatar" alt="avatar" />
         <input type="file" id="loginAvatar" accept="image/*" />
@@ -82,7 +82,7 @@
         <input type="text" id="loginName" placeholder="ชื่อของคุณ" />
         <button class="btn" id="loginSubmit">ตกลง</button>
       </div>
-      <p style="color:var(--muted); font-size:12px; margin-top:10px">โหมดนี้เป็นชุมชน: ใครพิมพ์ชื่อคุณ ก็เข้าถึงบัญชีชื่อคุณได้</p>
+      <p style="color:var(--muted); font-size:12px; margin-top:10px">โหมดนี้เป็นชุมชน: ใครพิมพ์ชื่อคุณก็เข้าถึงบัญชีชื่อนั้นได้</p>
     </div>
 
     <!-- AppBar -->
@@ -104,9 +104,7 @@
     <!-- Main -->
     <main class="hidden" id="mainView">
       <aside class="sidebar">
-        <div class="searchbox">
-          <input type="text" id="friendSearch" placeholder="ค้นหาเพื่อน..." />
-        </div>
+        <div class="searchbox"><input type="text" id="friendSearch" placeholder="ค้นหาเพื่อน..." /></div>
         <div class="friend-list" id="friendList"></div>
       </aside>
       <section class="chat">
@@ -143,6 +141,7 @@
     <button class="btn outline" id="toastClose">ปิด</button>
   </div>
   <audio id="notifySound" preload="auto">
+    <!-- ใส่เสียงของคุณเองได้ (ไฟล์สั้นๆ) -->
     <source src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAA" type="audio/mp3">
   </audio>
 
@@ -161,11 +160,11 @@
     };
     // ================================================
 
-    // ======= App init =======
+    // ======= Init Firebase =======
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ======= Constants & helpers =======
+    // ======= Helpers =======
     const CURRENT_KEY = "CHAT_CURRENT_USER";
     const defaultAvatar =
       "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
@@ -174,7 +173,6 @@
         <circle cx="60" cy="46" r="22" fill="#233056"/>
         <rect x="20" y="78" width="80" height="28" rx="14" fill="#233056"/>
       </svg>`);
-
     const qs = (sel) => document.querySelector(sel);
     const el = (tag, props={}, children=[]) => {
       const d = document.createElement(tag);
@@ -182,7 +180,6 @@
         if (k === "class") d.className = v;
         else if (k === "html") d.innerHTML = v;
         else if (k.startsWith("on")) d.addEventListener(k.slice(2), v);
-        else if (k === "style") d.setAttribute("style", v);
         else d.setAttribute(k, v);
       });
       children.forEach(c => d.appendChild(c));
@@ -199,11 +196,11 @@
       me: localStorage.getItem(CURRENT_KEY) || "",
       selectedFriend: "",
       searchQuery: "",
-      listeners: { chat: null, friends: null, incomingReq: null, outgoingReq: null },
-      cacheProfiles: {} // name -> {name, avatar}
+      listeners: { chat: null },
+      cacheProfiles: {}
     };
 
-    // ======= Realtime helpers =======
+    // ======= DB utils =======
     const dbRef = (path) => db.ref(path);
     const getOnce = (path) => dbRef(path).get().then(s => s.val());
     const setVal = (path, val) => dbRef(path).set(val);
@@ -211,31 +208,30 @@
     const removeVal = (path) => dbRef(path).remove();
 
     async function ensureAccount(name, avatarData) {
-      const accPath = `accounts/${name}`;
-      const acc = await getOnce(accPath);
+      const p = `accounts/${name}`;
+      const acc = await getOnce(p);
       if (!acc) {
-        await setVal(accPath, {
+        await setVal(p, {
           profile: { name, avatar: avatarData || defaultAvatar },
-          friends: {}, // map: friendName -> true
-          blocks: {}   // map: blockedName -> true
+          friends: {},
+          blocks: {}
         });
       } else if (avatarData) {
-        // อัปเดต avatar ถ้าผู้ใช้เลือก
-        await updateVal(`${accPath}/profile`, { name, avatar: avatarData });
+        await updateVal(`${p}/profile`, { name, avatar: avatarData });
       }
-      return (await getOnce(accPath));
+      return (await getOnce(p));
     }
 
     async function getProfile(name) {
       if (state.cacheProfiles[name]) return state.cacheProfiles[name];
       const acc = await getOnce(`accounts/${name}`);
-      const p = acc?.profile || { name, avatar: defaultAvatar };
-      state.cacheProfiles[name] = p;
-      return p;
+      const prof = acc?.profile || { name, avatar: defaultAvatar };
+      state.cacheProfiles[name] = prof;
+      return prof;
     }
 
-    // ======= UI render =======
-    function renderAppBars() {
+    // ======= Render =======
+    function renderBars() {
       const loggedIn = !!state.me;
       qs("#loginView").classList.toggle("hidden", loggedIn);
       qs("#appBar").classList.toggle("hidden", !loggedIn);
@@ -258,17 +254,17 @@
       list.innerHTML = "";
       for (const friend of names.filter(n => n.toLowerCase().includes(q))) {
         const prof = await getProfile(friend);
-        const item = el("div", { class: "friend-item" + (state.selectedFriend===friend ? " active" : "") });
+        const item = el("div", { class: "friend-item" + (state.selectedFriend===friend?" active":"") });
         item.appendChild(el("img", { class: "avatar", src: prof.avatar || defaultAvatar, alt: friend }));
-        const infoWrap = el("div", {}, [
+        const info = el("div", {}, [
           el("div", { class: "friend-name" }, [document.createTextNode(prof.name || friend)]),
           el("div", { class: "friend-sub" }, [document.createTextNode("เป็นเพื่อน")])
         ]);
-        item.appendChild(infoWrap);
+        item.appendChild(info);
         item.addEventListener("click", () => {
           state.selectedFriend = friend;
           renderChat();
-          renderFriendList(); // update active highlight
+          renderFriendList();
         });
         list.appendChild(item);
       }
@@ -293,7 +289,6 @@
       qs("#chatFriendName").textContent = prof.name || friend;
       qs("#chatFriendAvatar").src = prof.avatar || defaultAvatar;
 
-      // Blocked states
       const iBlocks = (await getOnce(`accounts/${state.me}/blocks`)) || {};
       const theyBlocks = (await getOnce(`accounts/${friend}/blocks`)) || {};
       const iBlockedThem = !!iBlocks[friend];
@@ -304,18 +299,11 @@
       unfriendBtn.disabled = false;
       sendBtn.disabled = !!(iBlockedThem || theyBlockedMe);
 
-      // Render messages live
       qs("#chatBody").innerHTML = "";
       attachChatListener(state.me, friend);
     }
 
-    // ======= Live listeners =======
-    function detach(path, handlerName) {
-      if (state.listeners[handlerName]) {
-        dbRef(path).off("value", state.listeners[handlerName]);
-        state.listeners[handlerName] = null;
-      }
-    }
+    // ======= Chat listener =======
     function detachChatListener() {
       if (state.listeners.chat) {
         state.listeners.chat.off();
@@ -325,31 +313,29 @@
 
     function attachChatListener(a, b) {
       detachChatListener();
-      const p = pairId(a, b);
-      const ref = dbRef(`chats/${p}/messages`);
+      const pid = pairId(a, b);
+      const ref = dbRef(`chats/${pid}/messages`);
       const body = qs("#chatBody");
       body.innerHTML = "";
-      // Build once
-      ref.get().then(snap => {
-        const msgs = snap.val() || {};
-        const arr = Object.values(msgs).sort((m1,m2)=> (m1.ts || 0) - (m2.ts || 0));
+      // initial load
+      ref.get().then(s => {
+        const msgs = s.val() || {};
+        const arr = Object.values(msgs).sort((x,y) => (x.ts||0)-(y.ts||0));
         arr.forEach(m => appendMessageBubble(m, body));
         body.scrollTop = body.scrollHeight;
       });
-      // Listen new message
-      const childAdded = ref.on("child_added", async (snap) => {
+      // listen new
+      const onAdd = ref.on("child_added", async snap => {
         const m = snap.val();
         appendMessageBubble(m, body);
         body.scrollTop = body.scrollHeight;
-        // Notification sound & toast when it's incoming
         if (m && m.to === state.me && m.from !== state.me) {
           const prof = await getProfile(m.from);
           showToast(prof.avatar, prof.name, (m.image ? "[รูปภาพ]" : (m.text || "")));
           playNotify();
         }
       });
-      // Save handle to allow off()
-      state.listeners.chat = { off: () => ref.off("child_added", childAdded) };
+      state.listeners.chat = { off: () => ref.off("child_added", onAdd) };
     }
 
     function appendMessageBubble(m, container) {
@@ -366,23 +352,21 @@
     // ======= Toast & Sound =======
     function playNotify() {
       const audio = qs("#notifySound");
-      // เบราเซอร์บางตัวต้องมี user gesture ก่อน จะเล่นเสียงได้
       audio.currentTime = 0;
-      audio.play().catch(()=>{ /* เงียบหากเล่นไม่ได้ */ });
+      audio.play().catch(()=>{});
     }
     function showToast(avatar, title, msg) {
       qs("#toastAvatar").src = avatar || defaultAvatar;
       qs("#toastTitle").textContent = title || "";
       qs("#toastMsg").textContent = msg || "";
       qs("#toast").classList.remove("hidden");
-      // auto hide after 6s
       clearTimeout(showToast._timer);
       showToast._timer = setTimeout(hideToast, 6000);
     }
     function hideToast() { qs("#toast").classList.add("hidden"); }
     qs("#toastClose").addEventListener("click", hideToast);
 
-    // ======= Events: Login =======
+    // ======= UI: Login preview =======
     (function initLoginPreview() {
       const input = qs("#loginAvatar");
       const preview = qs("#loginAvatarPreview");
@@ -393,6 +377,7 @@
       });
     })();
 
+    // ======= Events: Login =======
     qs("#loginSubmit").addEventListener("click", async () => {
       const name = (qs("#loginName").value || "").trim();
       if (!name) { alert("กรุณาใส่ชื่อ"); return; }
@@ -401,12 +386,8 @@
       await ensureAccount(name, avatarData);
       localStorage.setItem(CURRENT_KEY, name);
       state.me = name;
-      // reset UI fields
-      qs("#loginName").value = "";
-      qs("#loginAvatar").value = "";
-      qs("#loginAvatarPreview").src = defaultAvatar;
-      // draw app
-      renderAppBars();
+      qs("#loginName").value = ""; qs("#loginAvatar").value = ""; qs("#loginAvatarPreview").src = defaultAvatar;
+      renderBars();
       await renderTopMe();
       await renderFriendList();
       renderChat();
@@ -415,9 +396,8 @@
     // ======= Events: Logout =======
     qs("#logoutBtn").addEventListener("click", () => {
       localStorage.removeItem(CURRENT_KEY);
-      state.me = "";
-      state.selectedFriend = "";
-      renderAppBars();
+      state.me = ""; state.selectedFriend = "";
+      renderBars();
       detachChatListener();
     });
 
@@ -437,26 +417,22 @@
       let imgData = "";
       if (imgEl.files?.[0]) imgData = await readFileDataURL(imgEl.files[0]);
       if (!text && !imgData) { alert("พิมพ์ข้อความหรือแนบรูปภาพอย่างน้อยหนึ่งอย่าง"); return; }
-
-      // Block checks
       const iBlocks = (await getOnce(`accounts/${state.me}/blocks`)) || {};
       const theyBlocks = (await getOnce(`accounts/${friend}/blocks`)) || {};
       if (iBlocks[friend]) { alert("คุณบล็อกเพื่อนคนนี้อยู่ กรุณาปลดบล็อกก่อนส่งข้อความ"); return; }
-      if (theyBlocks[state.me]) { alert("ไม่สามารถส่งข้อความได้ เนื่องจากอีกฝ่ายบล็อกคุณ"); return; }
-
-      const p = pairId(state.me, friend);
+      if (theyBlocks[state.me]) { alert("ไม่สามารถส่งข้อความได้ เพราะอีกฝ่ายบล็อกคุณ"); return; }
+      const pid = pairId(state.me, friend);
       const msg = { from: state.me, to: friend, text: text || "", image: imgData || "", ts: Date.now() };
-      await dbRef(`chats/${p}/messages`).push(msg);
-
+      await dbRef(`chats/${pid}/messages`).push(msg);
       textEl.value = ""; imgEl.value = "";
-      // scroll handled on child_added
     });
 
     // Enter to send
     qs("#msgText").addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey && !qs("#sendBtn").disabled) {
+      const sendBtn = qs("#sendBtn");
+      if (e.key === "Enter" && !e.shiftKey && !sendBtn.disabled) {
         e.preventDefault();
-        qs("#sendBtn").click();
+        sendBtn.click();
       }
     });
 
@@ -467,9 +443,8 @@
       if (!confirm(`ยืนยันยกเลิกเป็นเพื่อนกับ "${friend}" ?`)) return;
       await removeVal(`accounts/${state.me}/friends/${friend}`);
       await removeVal(`accounts/${friend}/friends/${state.me}`);
-      // Optional: ลบแชท (คงไว้ก็ได้)
-      const p = pairId(state.me, friend);
-      await removeVal(`chats/${p}`);
+      const pid = pairId(state.me, friend);
+      await removeVal(`chats/${pid}`);
       state.selectedFriend = "";
       await renderFriendList();
       renderChat();
@@ -481,21 +456,19 @@
       if (!friend) return;
       const iBlocks = (await getOnce(`accounts/${state.me}/blocks`)) || {};
       const isBlocked = !!iBlocks[friend];
-      if (isBlocked) {
-        await removeVal(`accounts/${state.me}/blocks/${friend}`);
-      } else {
-        await setVal(`accounts/${state.me}/blocks/${friend}`, true);
-      }
+      if (isBlocked) await removeVal(`accounts/${state.me}/blocks/${friend}`);
+      else await setVal(`accounts/${state.me}/blocks/${friend}`, true);
       renderChat();
     });
 
     // ======= Modals =======
     const backdrop = qs("#modalBackdrop");
     const modal = qs("#modal");
+    function showBackdrop() { backdrop.classList.add("show"); }
     function hideModal() { backdrop.classList.remove("show"); modal.innerHTML = ""; }
     backdrop.addEventListener("click", (e) => { if (e.target === backdrop) hideModal(); });
 
-    // Add Friend
+    // Add Friend modal
     qs("#addFriendBtn").addEventListener("click", () => showModalAddFriend());
     function showModalAddFriend() {
       modal.innerHTML = "";
@@ -508,31 +481,29 @@
           if (!name) { alert("กรุณาใส่ชื่อเพื่อน"); return; }
           if (name === state.me) { alert("ไม่สามารถแอดตัวเองได้"); return; }
           await ensureAccount(name, null);
-          const myOutgoingPath = `requests/outgoing/${state.me}/${name}`;
-          const theirIncomingPath = `requests/incoming/${name}/${state.me}`;
           const alreadyFriend = await getOnce(`accounts/${state.me}/friends/${name}`);
-          const alreadyOutgoing = await getOnce(myOutgoingPath);
+          const alreadyOutgoing = await getOnce(`requests/outgoing/${state.me}/${name}`);
           if (alreadyFriend) { alert("คุณเป็นเพื่อนกันแล้ว"); return; }
           if (alreadyOutgoing) { alert("คุณส่งคำขอไปแล้ว"); return; }
-          await setVal(myOutgoingPath, true);
-          await setVal(theirIncomingPath, true);
+          await setVal(`requests/outgoing/${state.me}/${name}`, true);
+          await setVal(`requests/incoming/${name}/${state.me}`, true);
           alert("ส่งคำขอแอดเพื่อนเรียบร้อย");
           hideModal();
         }}, [document.createTextNode("ตกลง")])
       ]);
       modal.appendChild(el("div", { class: "row" }, [input]));
       modal.appendChild(actions);
-      backdrop.classList.add("show");
+      showBackdrop();
     }
 
-    // Requests
+    // Requests modal
     qs("#requestsBtn").addEventListener("click", () => showModalRequests());
     async function showModalRequests() {
       modal.innerHTML = "";
       modal.appendChild(el("h3", {}, [document.createTextNode("คำขอที่เข้ามา")]));
       const me = state.me;
-      const incomingMap = (await getOnce(`requests/incoming/${me}`)) || {};
-      const incomingNames = Object.keys(incomingMap).sort((a,b)=>a.localeCompare(b));
+      const incoming = (await getOnce(`requests/incoming/${me}`)) || {};
+      const incomingNames = Object.keys(incoming).sort((a,b)=>a.localeCompare(b));
       const listWrap = el("div", {});
       if (incomingNames.length === 0) {
         listWrap.appendChild(el("p", {}, [document.createTextNode("ยังไม่มีคำขอเข้ามา")]));
@@ -544,7 +515,6 @@
           item.appendChild(el("div", {}, [el("div", { class: "friend-name" }, [document.createTextNode(prof.name || name)])]));
           const actions = el("div", { class: "request-actions" }, [
             el("button", { class: "btn success", onClick: async () => {
-              // accept
               await setVal(`accounts/${me}/friends/${name}`, true);
               await setVal(`accounts/${name}/friends/${me}`, true);
               await removeVal(`requests/incoming/${me}/${name}`);
@@ -553,7 +523,6 @@
               showModalRequests();
             }}, [document.createTextNode("ยอมรับ")]),
             el("button", { class: "btn danger", onClick: async () => {
-              // decline
               await removeVal(`requests/incoming/${me}/${name}`);
               await removeVal(`requests/outgoing/${name}/${me}`);
               showModalRequests();
@@ -566,11 +535,11 @@
       modal.appendChild(listWrap);
 
       modal.appendChild(el("h3", {}, [document.createTextNode("คำขอที่คุณส่งออก")]));
-      const outgoingMap = (await getOnce(`requests/outgoing/${me}`)) || {};
-      const outgoingNames = Object.keys(outgoingMap).sort((a,b)=>a.localeCompare(b));
-      const outgoingWrap = el("div", {});
+      const outgoing = (await getOnce(`requests/outgoing/${me}`)) || {};
+      const outgoingNames = Object.keys(outgoing).sort((a,b)=>a.localeCompare(b));
+      const outWrap = el("div", {});
       if (outgoingNames.length === 0) {
-        outgoingWrap.appendChild(el("p", {}, [document.createTextNode("ยังไม่มีคำขอที่คุณส่งออก")]));
+        outWrap.appendChild(el("p", {}, [document.createTextNode("ยังไม่มีคำขอที่คุณส่งออก")]));
       } else {
         for (const name of outgoingNames) {
           const prof = await getProfile(name);
@@ -585,20 +554,20 @@
             }}, [document.createTextNode("ถอนคำขอ")]),
           ]);
           item.appendChild(actions);
-          outgoingWrap.appendChild(item);
+          outWrap.appendChild(item);
         }
       }
-      modal.appendChild(outgoingWrap);
+      modal.appendChild(outWrap);
 
       modal.appendChild(el("div", { class: "row", style: "margin-top:10px" }, [
         el("button", { class: "btn secondary", onClick: hideModal }, [document.createTextNode("ปิด")])
       ]));
-      backdrop.classList.add("show");
+      showBackdrop();
     }
 
-    // ======= Init if already logged-in =======
+    // ======= Init =======
     async function init() {
-      renderAppBars();
+      renderBars();
       if (state.me) {
         await ensureAccount(state.me, null);
         await renderTopMe();
