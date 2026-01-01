@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ชุมชนแชท • ไม่มี API • มือถือและคอม</title>
+  <style>
+    :root { --bg:#0f1216; --card:#171a20; --muted:#8892a0; --text:#e8edf7; --accent:#4f8cff; --green:#2ecc71; --red:#ff4d4f; --border:#2a2f3a; --bubble-me:#1e5631; --bubble-friend:#232832; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#0f1216; color:var(--text); height:100vh; overflow:hidden; }
+    .app { display:grid; grid-template-columns: 320px 1fr; height:100vh; }
+    .sidebar { background:var(--card); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:16px; gap:12px; }
+    .profile-head { display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    .avatar { width:48px; height:48px; border-radius:50%; background:#2d3340; object-fit:cover; border:2px solid #394255; }
+    .name { font-weight:600; font-size:16px; }
+    .text-muted { color:var(--muted); font-size:13px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:8px 12px; border-radius:10px; border:1px solid var(--border); background:#1b2028; color:var(--text); cursor:pointer; transition:.2s; }
+    .btn:hover { background:#212733; border-color:#3a4252; }
+    .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+    .btn.success { background:var(--green); border-color:var(--green); color:#fff; }
+    .btn.danger { background:var(--red); border-color:var(--red); color:#fff; }
+    .btn.ghost { background:transparent; border-color:var(--border); }
+    .actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .section-title { font-size:12px; text-transform:uppercase; color:var(--muted); letter-spacing:.08em; margin-top:8px; margin-bottom:6px; }
+    .friend-list { display:flex; flex-direction:column; gap:6px; overflow:auto; }
+    .friend-item { display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px; border:1px solid transparent; cursor:pointer; }
+    .friend-item:hover { background:#1b2028; border-color:var(--border); }
+    .friend-name { font-weight:500; }
+    .main { display:grid; grid-template-rows:auto 1fr auto; height:100vh; }
+    .chat-header { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); background:var(--card); }
+    .chat-title { font-weight:600; flex:1; }
+    .chat-header .header-actions { display:flex; gap:8px; }
+    .chat { padding:16px; overflow:auto; display:flex; flex-direction:column; gap:8px; background:#0f131a; }
+    .msg { max-width:70%; padding:10px 12px; border-radius:14px; display:inline-flex; flex-direction:column; gap:6px; line-height:1.4; word-break:break-word; border:1px solid #00000020; }
+    .msg.me { align-self:flex-end; background:var(--bubble-me); color:#eaffef; }
+    .msg.friend { align-self:flex-start; background:var(--bubble-friend); }
+    .msg .meta { font-size:11px; color:#c9d8c9; opacity:0.8; }
+    .msg.friend .meta { color:#afbdd1; }
+    .msg img { max-width:320px; border-radius:10px; border:1px solid #00000030; }
+    .composer { display:grid; grid-template-columns: 1fr auto auto; gap:8px; padding:12px; border-top:1px solid var(--border); background:#var(--card); }
+    .input { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#12161d; color:var(--text); }
+    .overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.4); backdrop-filter:blur(2px); z-index:50; }
+    .overlay.show { display:flex; }
+    .panel { width:min(92vw, 760px); max-height:84vh; overflow:auto; background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.35); }
+    .panel .head { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--border); }
+    .panel .body { padding:16px; display:flex; flex-direction:column; gap:12px; }
+    .panel .foot { padding:12px 16px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; }
+    .login-popup { width:520px; background:#fff; color:#111827; border-radius:16px; box-shadow:0 12px 50px rgba(0,0,0,.4); overflow:hidden; border:1px solid #e5e7eb; }
+    .login-head { padding:14px 16px; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; gap:10px; justify-content:space-between; }
+    .login-body { padding:16px; display:grid; gap:12px; }
+    .text { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #d1d5db; background:#fff; color:#111; }
+    .login-actions { display:grid; grid-template-columns:1fr; gap:8px; }
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { height: 100vh; }
+      .main { display:none; }
+      .mobile-show-chat .sidebar { display:none; }
+      .mobile-show-chat .main { display:grid; height:100vh; }
+      .mobile-back { display:inline-flex; }
+    }
+    .mobile-back { display:none; margin-left:auto; }
+    .notice { background:#2a3240; color:#cbd5e1; border:1px dashed #475569; padding:8px 10px; border-radius:10px; font-size:13px; }
+  </style>
+</head>
+<body>
+
+  <!-- Login (name-only) -->
+  <div id="loginOverlay" class="overlay show" aria-hidden="false">
+    <div class="login-popup" role="dialog" aria-modal="true">
+      <div class="login-head">
+        <strong>ลงชื่อเข้าใช้ด้วยชื่อ</strong>
+      </div>
+      <div class="login-body">
+        <label>กรอกชื่อของคุณ</label>
+        <input id="loginName" class="text" type="text" placeholder="เช่น asus"/>
+        <div class="login-actions">
+          <button id="loginBtn" class="btn primary">ตกลง</button>
+        </div>
+        <div id="loginMsg" class="text-muted"></div>
+        <div class="text-muted">หมายเหตุ: เมื่อคุณลงชื่อ ระบบจะเผยแพร่ชื่อของคุณในชุมชนของเว็บไซต์นี้ เพื่อให้คนอื่นสามารถใช้ชื่อนี้ลงชื่อและพบคุณได้</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add friend -->
+  <div id="addFriendOverlay" class="overlay">
+    <div class="panel">
+      <div class="head">
+        <strong>แอดเพื่อน</strong>
+        <button class="btn ghost" id="closeAddFriendBtn">ปิด</button>
+      </div>
+      <div class="body">
+        <input id="friendSearch" class="text" placeholder="พิมพ์ชื่อ..."/>
+        <div style="display:flex; gap:8px;">
+          <button id="friendSearchConfirm" class="btn primary">ตกลง</button>
+          <button id="friendSearchShowAll" class="btn">แสดงทั้งหมด</button>
+        </div>
+        <div class="section-title">ผู้ใช้ในชุมชนเว็บนี้</div>
+        <div id="searchResults" class="friend-list"></div>
+        <div class="text-muted">ใส่ชื่อแล้วกด “ตกลง” เพื่อค้นหา และแสดงผลเรียงตามตัวอักษร</div>
+      </div>
+      <div class="foot">
+        <button class="btn ghost" id="closeAddFriendFoot">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Requests -->
+  <div id="requestsOverlay" class="overlay">
+    <div class="panel">
+      <div class="head">
+        <strong>คำขอเป็นเพื่อน</strong>
+        <button class="btn ghost" id="closeRequestsBtn">ปิด</button>
+      </div>
+      <div class="body">
+        <div id="requestList" class="friend-list"></div>
+      </div>
+      <div class="foot">
+        <button class="btn ghost" id="closeRequestsFoot">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div class="app" id="app" style="display:none;">
+    <aside class="sidebar">
+      <div class="profile-head">
+        <img id="myAvatar" class="avatar" src="" alt="avatar"/>
+        <div style="flex:1;">
+          <div class="name" id="myNameText">ไม่ระบุชื่อ</div>
+          <div class="text-muted">อัพโหลดรูปโปรไฟล์ของคุณได้ที่ปุ่มด้านล่าง</div>
+        </div>
+        <button id="logoutBtn" class="btn danger">ออกระบบ</button>
+      </div>
+
+      <div class="actions">
+        <button id="openAddFriend" class="btn">แอดเพื่อน</button>
+        <button id="openRequests" class="btn">คำขอ</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;">
+        <input id="uploadAvatar" type="file" accept="image/*"/>
+        <button id="applyNewAvatar" class="btn">ตั้งรูปโปรไฟล์</button>
+      </div>
+
+      <div class="section-title">เพื่อนของฉัน</div>
+      <div id="friendList" class="friend-list"></div>
+      <div id="friendsEmpty" class="text-muted" style="display:none;">ยังไม่มีเพื่อน ลองกด “แอดเพื่อน”</div>
+    </aside>
+
+    <section class="main">
+      <div class="chat-header">
+        <img id="chatAvatar" class="avatar" src="" alt="friend"/>
+        <div class="chat-title" id="chatTitle">เลือกเพื่อนเพื่อเริ่มคุย</div>
+        <div class="header-actions">
+          <button id="unfriendBtn" class="btn">ยกเลิกเป็นเพื่อน</button>
+          <button id="blockBtn" class="btn danger">บล็อก</button>
+          <button id="mobileBackBtn" class="btn mobile-back">กลับหน้าเพื่อน</button>
+        </div>
+      </div>
+      <div id="chatMessages" class="chat"></div>
+      <div id="blockNotice" class="notice" style="display:none;">บล็อกอยู่: ไม่สามารถส่งข้อความจนกว่าจะปลดบล็อก</div>
+      <div class="composer">
+        <input id="msgInput" class="input" type="text" placeholder="พิมพ์ข้อความ..."/>
+        <input id="imgInput" type="file" accept="image/*" style="display:none"/>
+        <button id="attachImg" class="btn">ส่งรูป</button>
+        <button id="sendMsg" class="btn primary">ส่งข้อความ</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    /* ---------- Community registry (demo “server”) ---------- */
+    // Shared across visits on this browser via localStorage. Everyone on this page can see these names.
+    window.PUBLIC_USERS = window.PUBLIC_USERS || [];
+    const loadPublicUsers = () => {
+      try { const s = JSON.parse(localStorage.getItem('public_users') || '[]'); if (Array.isArray(s)) window.PUBLIC_USERS = s; } catch {}
+    };
+    const savePublicUsers = () => localStorage.setItem('public_users', JSON.stringify(window.PUBLIC_USERS));
+    loadPublicUsers();
+
+    /* ---------- Local persistence ---------- */
+    const LS = {
+      get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+      set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+      del: (k) => localStorage.removeItem(k)
+    };
+    const now = () => new Date().toISOString();
+    const genId = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const avatarFallback = (u) => `https://i.pravatar.cc/100?u=${encodeURIComponent(u)}`;
+    const safeUrl = u => u || '';
+
+    // Data shapes:
+    // users: [{id, username, avatarDataUrl, createdAt}]
+    // sessions: { currentUserId, lastSelectedFriendId }
+    // friends: [{ownerId, friendId, createdAt}]
+    // friendRequests: [{id, fromId, toId, status, createdAt}]
+    // chats: { "<aId>_<bId>": [ {id, type:'text'|'image', text|dataUrl, fromId, toId, createdAt} ] }
+    // blocks: [{blockerId, blockedId, active:true}]
+
+    const chatIdFor = (a,b) => [a,b].sort().join('_');
+
+    /* ---------- Elements ---------- */
+    const loginOverlay = document.getElementById('loginOverlay');
+    const loginNameInput = document.getElementById('loginName');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginMsg = document.getElementById('loginMsg');
+
+    const appEl = document.getElementById('app');
+    const myAvatar = document.getElementById('myAvatar');
+    const myNameText = document.getElementById('myNameText');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const uploadAvatarInput = document.getElementById('uploadAvatar');
+    const applyNewAvatarBtn = document.getElementById('applyNewAvatar');
+
+    const openAddFriendBtn = document.getElementById('openAddFriend');
+    const openRequestsBtn = document.getElementById('openRequests');
+
+    const friendList = document.getElementById('friendList');
+    const friendsEmpty = document.getElementById('friendsEmpty');
+
+    const addFriendOverlay = document.getElementById('addFriendOverlay');
+    const closeAddFriendBtn = document.getElementById('closeAddFriendBtn');
+    const closeAddFriendFoot = document.getElementById('closeAddFriendFoot');
+    const friendSearch = document.getElementById('friendSearch');
+    const friendSearchConfirm = document.getElementById('friendSearchConfirm');
+    const friendSearchShowAll = document.getElementById('friendSearchShowAll');
+    const searchResults = document.getElementById('searchResults');
+
+    const requestsOverlay = document.getElementById('requestsOverlay');
+    const closeRequestsBtn = document.getElementById('closeRequestsBtn');
+    const closeRequestsFoot = document.getElementById('closeRequestsFoot');
+    const requestList = document.getElementById('requestList');
+
+    const chatAvatar = document.getElementById('chatAvatar');
+    const chatTitle = document.getElementById('chatTitle');
+    const chatMessages = document.getElementById('chatMessages');
+    const blockNotice = document.getElementById('blockNotice');
+    const msgInput = document.getElementById('msgInput');
+    const sendMsgBtn = document.getElementById('sendMsg');
+    const attachImgBtn = document.getElementById('attachImg');
+    const imgInput = document.getElementById('imgInput');
+    const unfriendBtn = document.getElementById('unfriendBtn');
+    const blockBtn = document.getElementById('blockBtn');
+    const mobileBackBtn = document.getElementById('mobileBackBtn');
+
+    /* ---------- State ---------- */
+    let me = null;
+    let selectedFriendId = null;
+
+    /* ---------- Boot ---------- */
+    boot();
+    function boot() {
+      const sess = LS.get('sessions', { currentUserId: null, lastSelectedFriendId: null });
+      const users = LS.get('users', []);
+      me = users.find(u => u.id === sess.currentUserId) || null;
+      if (me) {
+        showApp();
+        postLoginInit();
+        // Restore last selected friend
+        if (sess.lastSelectedFriendId) selectFriend(sess.lastSelectedFriendId, true);
+      } else {
+        showLogin();
+      }
+    }
+    function showLogin() {
+      loginOverlay.classList.add('show');
+      loginOverlay.setAttribute('aria-hidden','false');
+      appEl.style.display = 'none';
+    }
+    function showApp() {
+      loginOverlay.classList.remove('show');
+      loginOverlay.setAttribute('aria-hidden','true');
+      appEl.style.display = 'grid';
+    }
+
+    /* ---------- Community publish ---------- */
+    function publishUserToCommunity(user) {
+      const list = window.PUBLIC_USERS || [];
+      if (!list.find(u => u.id === user.id)) {
+        list.push({ id:user.id, username:user.username, avatarDataUrl:user.avatarDataUrl, createdAt:user.createdAt });
+        window.PUBLIC_USERS = list;
+        savePublicUsers();
+      }
+    }
+
+    /* ---------- Login flow ---------- */
+    loginBtn.addEventListener('click', () => {
+      const name = (loginNameInput.value || '').trim();
+      if (!name) { loginMsg.textContent = 'กรุณาใส่ชื่อ'; return; }
+      const users = LS.get('users', []);
+      let user = users.find(u => u.username.toLowerCase() === name.toLowerCase());
+
+      // If not exist locally, check community and import; else create new
+      if (!user) {
+        const pub = (window.PUBLIC_USERS || []).find(u => u.username.toLowerCase() === name.toLowerCase());
+        if (pub) {
+          users.push({ ...pub });
+          LS.set('users', users);
+          user = pub;
+        } else {
+          user = { id: genId(), username: name, avatarDataUrl: avatarFallback(name), createdAt: now() };
+          users.push(user);
+          LS.set('users', users);
+          // Publish to community
+          publishUserToCommunity(user);
+        }
+      }
+
+      me = user;
+      LS.set('sessions', { currentUserId: me.id, lastSelectedFriendId: null });
+      showApp();
+      postLoginInit();
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      LS.set('sessions', { currentUserId: null, lastSelectedFriendId: null });
+      me = null;
+      appEl.style.display = 'none';
+      showLogin();
+    });
+
+    /* ---------- Post login init ---------- */
+    function postLoginInit() {
+      myAvatar.src = safeUrl(me.avatarDataUrl || avatarFallback(me.username));
+      myNameText.textContent = me.username;
+      renderFriends();
+      renderRequests();
+      renderChatHeader();
+      chatMessages.innerHTML = '';
+      document.body.classList.remove('mobile-show-chat');
+    }
+
+    /* ---------- Avatar upload ---------- */
+    applyNewAvatarBtn.addEventListener('click', () => {
+      const file = uploadAvatarInput.files?.[0];
+      if (!file) return alert('เลือกไฟล์รูปภาพก่อน');
+      const reader = new FileReader();
+      reader.onload = () => {
+        me.avatarDataUrl = reader.result;
+        const users = LS.get('users', []);
+        const idx = users.findIndex(u => u.id === me.id);
+        if (idx >= 0) {
+          users[idx] = me;
+          LS.set('users', users);
+        }
+        // Update community record too
+        publishUserToCommunity(me);
+        myAvatar.src = safeUrl(me.avatarDataUrl);
+        alert('อัพเดตรูปโปรไฟล์เรียบร้อย');
+        renderFriends(); // refresh avatars
+        if (selectedFriendId) renderChatHeader(); // header avatar if chatting with self is not necessary
+      };
+      reader.readAsDataURL(file);
+    });
+
+    /* ---------- Friends ---------- */
+    function getFriendsOf(uid) { return LS.get('friends', []).filter(f => f.ownerId === uid); }
+    function renderFriends() {
+      const friends = getFriendsOf(me.id);
+      const users = LS.get('users', []);
+      const mapped = friends
+        .map(f => users.find(u => u.id === f.friendId) || (window.PUBLIC_USERS || []).find(u => u.id === f.friendId))
+        .filter(Boolean)
+        .sort((a,b) => (a.username).localeCompare(b.username, 'th'));
+
+      friendList.innerHTML = '';
+      if (!mapped.length) { friendsEmpty.style.display = 'block'; return; }
+      friendsEmpty.style.display = 'none';
+
+      mapped.forEach(u => {
+        const item = document.createElement('div');
+        item.className = 'friend-item';
+        item.innerHTML = `<img class="avatar" src="${safeUrl(u.avatarDataUrl || avatarFallback(u.username))}" alt="${escapeHtml(u.username)}"/>
+                          <div class="friend-name">${escapeHtml(u.username)}</div>`;
+        item.addEventListener('click', () => selectFriend(u.id));
+        friendList.appendChild(item);
+      });
+    }
+
+    /* ---------- Add Friend UI ---------- */
+    openAddFriendBtn.addEventListener('click', () => {
+      friendSearch.value = '';
+      searchResults.innerHTML = '';
+      addFriendOverlay.classList.add('show');
+    });
+    const closeAddFriend = () => addFriendOverlay.classList.remove('show');
+    closeAddFriendBtn.addEventListener('click', closeAddFriend);
+    closeAddFriendFoot.addEventListener('click', closeAddFriend);
+
+    function renderCommunityUsers(qText, showAll=false) {
+      const q = (qText || '').trim().toLowerCase();
+      const list = (window.PUBLIC_USERS || [])
+        .filter(u => u.id !== me.id)
+        .filter(u => showAll ? true : u.username.toLowerCase().includes(q))
+        .sort((a,b) => (a.username).localeCompare(b.username, 'th'));
+
+      searchResults.innerHTML = '';
+      if (!list.length) {
+        const none = document.createElement('div'); none.className='text-muted'; none.textContent='ไม่พบผู้ใช้ตามเงื่อนไข';
+        searchResults.appendChild(none);
+        return;
+      }
+      const mine = new Set(getFriendsOf(me.id).map(f => f.friendId));
+      list.forEach(u => {
+        const already = mine.has(u.id);
+        const row = document.createElement('div');
+        row.className = 'friend-item';
+        row.innerHTML = `
+          <img class="avatar" src="${safeUrl(u.avatarDataUrl || avatarFallback(u.username))}" alt="${escapeHtml(u.username)}"/>
+          <div class="friend-name">${escapeHtml(u.username)}</div>
+          <div style="margin-left:auto;">
+            <button class="btn ${already ? 'ghost' : 'success'}">${already ? 'เป็นเพื่อนแล้ว' : 'แอด'}</button>
+          </div>
+        `;
+        const btn = row.querySelector('button');
+        btn.addEventListener('click', () => {
+          if (already) return;
+          sendFriendRequest(me.id, u.id);
+          btn.textContent = 'ส่งคำขอแล้ว';
+          btn.className = 'btn ghost';
+        });
+        searchResults.appendChild(row);
+      });
+    }
+    friendSearchConfirm.addEventListener('click', () => renderCommunityUsers(friendSearch.value, false));
+    friendSearchShowAll.addEventListener('click', () => renderCommunityUsers('', true));
+
+    function sendFriendRequest(fromId, toId) {
+      const reqs = LS.get('friendRequests', []);
+      if (reqs.some(r => r.fromId === fromId && r.toId === toId && r.status === 'pending')) return;
+      reqs.push({ id: genId(), fromId, toId, status:'pending', createdAt: now() });
+      LS.set('friendRequests', reqs);
+      alert('ส่งคำขอแล้ว');
+    }
+
+    /* ---------- Requests UI ---------- */
+    openRequestsBtn.addEventListener('click', () => {
+      renderRequests();
+      requestsOverlay.classList.add('show');
+    });
+    const closeRequests = () => requestsOverlay.classList.remove('show');
+    closeRequestsBtn.addEventListener('click', closeRequests);
+    closeRequestsFoot.addEventListener('click', closeRequests);
+
+    function renderRequests() {
+      requestList.innerHTML = '';
+      const reqs = LS.get('friendRequests', []).filter(r => r.toId === me.id && r.status === 'pending');
+      const usersAll = (LS.get('users', [])).concat(window.PUBLIC_USERS || []);
+      if (!reqs.length) {
+        const empty = document.createElement('div'); empty.className='text-muted'; empty.textContent='ยังไม่มีคำขอเข้ามา';
+        requestList.appendChild(empty);
+        return;
+      }
+      reqs.forEach(r => {
+        const fromUser = usersAll.find(u => u.id === r.fromId);
+        const row = document.createElement('div');
+        row.className = 'friend-item';
+        row.innerHTML = `
+          <img class="avatar" src="${safeUrl(fromUser?.avatarDataUrl || avatarFallback(fromUser?.username||''))}" alt="${escapeHtml(fromUser?.username||'')}"/>
+          <div class="friend-name">${escapeHtml(fromUser?.username || 'ไม่ทราบชื่อ')}</div>
+          <div style="margin-left:auto; display:flex; gap:8px;">
+            <button class="btn success">ยอมรับ</button>
+            <button class="btn">ยกเลิก</button>
+          </div>
+        `;
+        const accept = row.querySelector('.btn.success');
+        const decline = row.querySelector('.btn:not(.success)');
+        accept.addEventListener('click', () => {
+          const fr = LS.get('friends', []);
+          fr.push({ ownerId: me.id, friendId: r.fromId, createdAt: now() });
+          fr.push({ ownerId: r.fromId, friendId: me.id, createdAt: now() });
+          LS.set('friends', fr);
+          const all = LS.get('friendRequests', []);
+          const idx = all.findIndex(x => x.id === r.id);
+          if (idx >= 0) { all[idx].status = 'accepted'; LS.set('friendRequests', all); }
+          renderFriends();
+          renderRequests();
+        });
+        decline.addEventListener('click', () => {
+          const all = LS.get('friendRequests', []);
+          const idx = all.findIndex(x => x.id === r.id);
+          if (idx >= 0) { all[idx].status = 'declined'; LS.set('friendRequests', all); }
+          renderRequests();
+        });
+        requestList.appendChild(row);
+      });
+    }
+
+    /* ---------- Chat ---------- */
+    function selectFriend(fid, restore=false) {
+      selectedFriendId = fid;
+      const sess = LS.get('sessions', { currentUserId: me.id, lastSelectedFriendId: null });
+      LS.set('sessions', { ...sess, lastSelectedFriendId: fid });
+      renderChatHeader();
+      renderMessages();
+      updateBlockUI();
+      if (!restore && window.matchMedia("(max-width: 900px)").matches) document.body.classList.add('mobile-show-chat');
+    }
+
+    function renderChatHeader() {
+      if (!selectedFriendId) {
+        chatTitle.textContent = 'เลือกเพื่อนเพื่อเริ่มคุย';
+        chatAvatar.src = '';
+        return;
+      }
+      const friends = (LS.get('users', [])).concat(window.PUBLIC_USERS || []);
+      const user = friends.find(u => u.id === selectedFriendId);
+      chatTitle.textContent = `คุยกับ ${escapeHtml(user?.username || '')}`;
+      chatAvatar.src = safeUrl(user?.avatarDataUrl || avatarFallback(user?.username || ''));
+      // Set block button label
+      blockBtn.textContent = isBlocked(me.id, selectedFriendId) ? 'ปลดบล็อก' : 'บล็อก';
+    }
+
+    function renderMessages() {
+      chatMessages.innerHTML = '';
+      if (!selectedFriendId) return;
+      const cid = chatIdFor(me.id, selectedFriendId);
+      const chats = LS.get('chats', {});
+      const thread = chats[cid] || [];
+      const friends = (LS.get('users', [])).concat(window.PUBLIC_USERS || []);
+      const friendObj = friends.find(u => u.id === selectedFriendId);
+      thread.forEach(m => {
+        const d = document.createElement('div');
+        const fromMe = m.fromId === me.id;
+        d.className = `msg ${fromMe ? 'me' : 'friend'}`;
+        const ts = new Date(m.createdAt);
+        const timestr = ts.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+        if (m.type === 'text') {
+          d.innerHTML = `<div>${escapeHtml(m.text || '')}</div><div class="meta">${fromMe ? 'ฉัน' : (friendObj?.username || 'เพื่อน')} • ${timestr}</div>`;
+        } else if (m.type === 'image') {
+          d.innerHTML = `<img src="${safeUrl(m.dataUrl)}" alt="image"/><div class="meta">${fromMe ? 'ฉัน' : (friendObj?.username || 'เพื่อน')} • ${timestr}</div>`;
+        }
+        chatMessages.appendChild(d);
+      });
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function appendMessage(msg) {
+      const cid = chatIdFor(me.id, selectedFriendId);
+      const chats = LS.get('chats', {});
+      const thread = chats[cid] || [];
+      thread.push({ id: genId(), ...msg, fromId: me.id, toId: selectedFriendId, createdAt: now() });
+      chats[cid] = thread;
+      LS.set('chats', chats);
+      renderMessages();
+    }
+
+    sendMsgBtn.addEventListener('click', () => {
+      if (!selectedFriendId) return alert('เลือกเพื่อนก่อน');
+      if (isBlocked(me.id, selectedFriendId)) return alert('คุณได้บล็อกผู้ใช้รายนี้อยู่');
+      if (isBlocked(selectedFriendId, me.id)) return alert('คุณถูกบล็อกโดยผู้ใช้นี้');
+      const text = msgInput.value.trim();
+      if (!text) return;
+      appendMessage({ type:'text', text });
+      msgInput.value = '';
+    });
+
+    attachImgBtn.addEventListener('click', () => imgInput.click());
+    imgInput.addEventListener('change', () => {
+      if (!selectedFriendId) return alert('เลือกเพื่อนก่อน');
+      if (isBlocked(me.id, selectedFriendId)) return alert('คุณได้บล็อกผู้ใช้รายนี้อยู่');
+      if (isBlocked(selectedFriendId, me.id)) return alert('คุณถูกบล็อกโดยผู้ใช้นี้');
+      const file = imgInput.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        appendMessage({ type:'image', dataUrl: reader.result });
+        imgInput.value = '';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    mobileBackBtn.addEventListener('click', () => {
+      document.body.classList.remove('mobile-show-chat');
+      selectedFriendId = null;
+      const sess = LS.get('sessions', { currentUserId: me.id, lastSelectedFriendId: null });
+      LS.set('sessions', { ...sess, lastSelectedFriendId: null });
+      renderChatHeader();
+      chatMessages.innerHTML = '';
+      blockNotice.style.display = 'none';
+    });
+
+    /* ---------- Unfriend ---------- */
+    unfriendBtn.addEventListener('click', () => {
+      if (!selectedFriendId) return;
+      const fr = LS.get('friends', []);
+      const cleaned = fr.filter(x => !( (x.ownerId === me.id && x.friendId === selectedFriendId) || (x.ownerId === selectedFriendId && x.friendId === me.id) ));
+      LS.set('friends', cleaned);
+      alert('เลิกเป็นเพื่อนเรียบร้อย');
+      selectedFriendId = null;
+      const sess = LS.get('sessions', { currentUserId: me.id, lastSelectedFriendId: null });
+      LS.set('sessions', { ...sess, lastSelectedFriendId: null });
+      renderFriends();
+      renderChatHeader();
+      chatMessages.innerHTML = '';
+      blockNotice.style.display = 'none';
+    });
+
+    /* ---------- Block / Unblock ---------- */
+    function getBlocks() { return LS.get('blocks', []); }
+    function isBlocked(blockerId, blockedId) {
+      return getBlocks().some(b => b.blockerId === blockerId && b.blockedId === blockedId && b.active);
+    }
+    function setBlock(blockerId, blockedId, active) {
+      const blocks = getBlocks();
+      const idx = blocks.findIndex(b => b.blockerId === blockerId && b.blockedId === blockedId);
+      if (idx >= 0) {
+        blocks[idx].active = active;
+      } else {
+        blocks.push({ blockerId, blockedId, active });
+      }
+      LS.set('blocks', blocks);
+    }
+    function updateBlockUI() {
+      if (!selectedFriendId) { blockNotice.style.display = 'none'; return; }
+      const blockedByMe = isBlocked(me.id, selectedFriendId);
+      const blockedMe = isBlocked(selectedFriendId, me.id);
+      blockBtn.textContent = blockedByMe ? 'ปลดบล็อก' : 'บล็อก';
+      blockNotice.style.display = (blockedByMe || blockedMe) ? 'block' : 'none';
+      blockNotice.textContent = blockedByMe ? 'บล็อกอยู่: ไม่สามารถส่งข้อความจนกว่าจะปลดบล็อก' :
+                                blockedMe ? 'คุณถูกบล็อก: ไม่สามารถส่งข้อความ' : '';
+    }
+    blockBtn.addEventListener('click', () => {
+      if (!selectedFriendId) return;
+      const nowBlocked = !isBlocked(me.id, selectedFriendId);
+      setBlock(me.id, selectedFriendId, nowBlocked);
+      updateBlockUI();
+    });
+
+    /* ---------- Overlay backdrop ---------- */
+    [addFriendOverlay, requestsOverlay].forEach(ov => {
+      ov.addEventListener('click', (e) => { if (e.target === ov) ov.classList.remove('show'); });
+    });
+
+    /* ---------- Keyboard helpers ---------- */
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        [addFriendOverlay, requestsOverlay].forEach(ov => ov.classList.remove('show'));
+      }
+      if (e.key === 'Enter' && document.activeElement === msgInput) sendMsgBtn.click();
+    });
+  </script>
+</body>
+</html>
