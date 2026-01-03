@@ -3,40 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Super Creator - Live on GitHub</title>
+    <title>AI Creator - Fixed & Fast</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap');
-        body { font-family: 'Kanit', sans-serif; background-color: #020617; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .chat-area::-webkit-scrollbar { width: 4px; }
-        .chat-area::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+        body { font-family: 'Kanit', sans-serif; background-color: #0f172a; color: #f1f5f9; }
+        .chat-container::-webkit-scrollbar { width: 6px; }
+        .chat-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .image-glow { box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
 
-    <div class="w-full max-w-2xl glass rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[90vh]">
-        <div class="bg-gradient-to-r from-blue-600 to-cyan-500 p-5 text-white flex justify-between items-center">
-            <div>
-                <h1 class="text-xl font-bold tracking-tight">🚀 AI SUPER CREATOR</h1>
-                <p class="text-[10px] opacity-80 uppercase">No API Key • Auto Image • GitHub Ready</p>
-            </div>
-            <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+    <div class="w-full max-w-2xl bg-[#1e293b] rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[85vh] border border-slate-700">
+        <div class="bg-slate-800 p-4 border-b border-slate-700 flex items-center gap-3">
+            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <h1 class="text-lg font-semibold tracking-wide text-sky-400">AI CREATOR PRO</h1>
         </div>
 
-        <div id="chat-box" class="chat-area flex-1 overflow-y-auto p-6 flex flex-col gap-4">
-            <div class="self-start bg-slate-800 p-4 rounded-2xl rounded-tl-none border border-slate-700 text-sm max-w-[85%]">
-                🤖 **ระบบพร้อมใช้งาน!** <br> 
-                - พิมพ์คุยปกติได้เลย <br>
-                - พิมพ์ **"วาดรูป..."** เพื่อสร้างภาพ (เช่น วาดรูปแมวน่ารัก)
+        <div id="chat-box" class="chat-container flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+            <div class="self-start bg-slate-700 p-3 rounded-2xl rounded-tl-none border border-slate-600 text-sm max-w-[85%]">
+                🤖 **สวัสดีครับ!** ผมแก้บัคให้แล้ว <br>
+                ลองพิมพ์ว่า **"วาดรูปมังกรน้ำแข็ง"** หรือถามอะไรก็ได้ครับ
             </div>
         </div>
 
-        <div class="p-4 bg-slate-900/50 border-t border-slate-800">
-            <div class="flex gap-2 relative">
-                <input id="user-input" type="text" placeholder="พิมพ์ข้อความที่นี่..." 
-                    class="flex-1 bg-slate-950 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-cyan-500 text-white transition-all text-sm">
-                <button id="send-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-2 rounded-2xl font-bold shadow-lg transition-all active:scale-95">
+        <div class="p-4 bg-slate-800 border-t border-slate-700">
+            <div class="flex gap-2">
+                <input id="user-input" type="text" placeholder="พิมพ์คำถามหรือสั่งวาดรูป..." 
+                    class="flex-1 bg-slate-900 border border-slate-600 rounded-2xl px-5 py-3 outline-none focus:border-sky-500 transition-all text-sm">
+                <button id="send-btn" class="bg-sky-600 hover:bg-sky-500 text-white px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 shadow-lg">
                     ส่ง
                 </button>
             </div>
@@ -48,60 +44,69 @@
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
 
-        async function handleAction() {
-            const prompt = userInput.value.trim();
-            if (!prompt) return;
+        async function handleMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
 
-            addBubble('คุณ', prompt, 'user');
+            addBubble('คุณ', text, 'user');
             userInput.value = '';
 
             // ตรวจสอบว่าเป็นคำสั่งวาดรูปหรือไม่
-            const isDrawing = /วาด|สร้าง|รูป|ภาพ|image|draw|art/i.test(prompt);
+            const isDrawing = /วาด|สร้าง|รูป|ภาพ|image|draw|art/i.test(text);
 
             if (isDrawing) {
-                const loadingId = 'img-' + Date.now();
-                addBubble('AI', '🎨 กำลังวาดภาพให้คุณครู่หนึ่ง...', 'ai', loadingId);
+                const bubbleId = 'ai-' + Date.now();
+                addBubble('AI', '🎨 กำลังเนรมิตภาพให้ตามคำขอครับ...', 'ai', bubbleId);
 
-                // คลีนคำสั่งเพื่อเอาไปวาดรูป
-                let drawPrompt = prompt.replace(/วาดรูป|สร้างรูป|รูปภาพ|ภาพ|ให้หน่อย|เอาแบบ/g, '').trim();
-                if (!drawPrompt) drawPrompt = "stunning digital wallpaper";
+                // ดึงคำหลักมาวาดรูป
+                let prompt = text.replace(/วาดรูป|สร้างรูป|รูปภาพ|ภาพ|ให้หน่อย|เอาแบบ/g, '').trim();
+                if (!prompt) prompt = "beautiful landscape art";
 
                 const seed = Math.floor(Math.random() * 1000000);
-                const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(drawPrompt)}?width=1024&height=1024&seed=${seed}&model=flux&nologo=true`;
+                // ใช้ Model Flux ที่สวยที่สุด
+                const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}&model=flux&nologo=true`;
 
-                setTimeout(() => {
-                    const bubble = document.getElementById(loadingId);
-                    if (bubble) {
-                        bubble.innerHTML = `<b>AI:</b> วาดภาพ <i>"${drawPrompt}"</i> เสร็จแล้วครับ:<br>
-                        <div class="mt-3 relative">
-                            <img src="${imageUrl}" class="rounded-xl w-full border border-slate-700 shadow-2xl transition-opacity duration-700 opacity-0" 
-                                onload="this.style.opacity='1'; scrollToBottom();"
-                                onerror="this.parentElement.innerHTML='❌ ไม่สามารถสร้างภาพนี้ได้ ลองเปลี่ยนคำสั่งดูนะครับ';">
-                        </div>`;
-                    }
-                }, 1000);
+                // รอแสดงภาพใต้ข้อความ
+                const bubble = document.getElementById(bubbleId);
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'mt-3 relative min-h-[200px] flex items-center justify-center bg-slate-800 rounded-xl overflow-hidden';
+                imgContainer.innerHTML = `<div class="text-xs text-slate-500 animate-pulse">กำลังโหลดภาพ...</div>`;
+                
+                const img = new Image();
+                img.src = imageUrl;
+                img.className = 'w-full rounded-xl image-glow opacity-0 transition-opacity duration-1000 relative z-10';
+                
+                img.onload = () => {
+                    imgContainer.innerHTML = ''; // เอาตัวโหลดออก
+                    imgContainer.appendChild(img);
+                    img.classList.remove('opacity-0');
+                    scrollToBottom();
+                };
+
+                img.onerror = () => {
+                    imgContainer.innerHTML = '<div class="p-4 text-xs text-red-400 text-center">❌ ไม่สามารถสร้างภาพนี้ได้เนื่องจากระบบคัดกรองเนื้อหา</div>';
+                };
+
+                bubble.appendChild(imgContainer);
 
             } else {
                 // ถามตอบปกติ
-                const tempId = 'text-' + Date.now();
-                addBubble('AI', '...', 'ai', tempId);
+                const bubbleId = 'ai-' + Date.now();
+                addBubble('AI', '...', 'ai', bubbleId);
 
                 try {
-                    // ป้องกัน Error 400 ด้วยการใช้ตัวแปรเสริม
-                    const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&system=คุณคือAIอัจฉริยะ_ตอบสั้น_ตรงประเด็น_เป็นภาษาไทย`);
-                    
-                    if (!response.ok) throw new Error();
+                    const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(text)}?model=openai&system=คุณคือAIที่ฉลาดที่สุด_ตอบเป็นภาษาไทย_สั้นๆตรงประเด็น`);
+                    const responseText = await res.text();
 
-                    const result = await response.text();
-
-                    // ดักจับบัคที่เป็นโค้ด Error JSON
-                    if (result.includes('"error":')) {
-                        document.getElementById(tempId).innerHTML = `<b>AI:</b> ⚠️ ขออภัยครับ คำถามนี้ขัดต่อกฎระบบ ลองถามอย่างอื่นดูนะ`;
+                    const bubble = document.getElementById(bubbleId);
+                    // ป้องกันการส่ง Error JSON มาแสดง
+                    if (responseText.includes('"error":')) {
+                        bubble.innerHTML = `<b>AI:</b> ⚠️ ขออภัยครับ ระบบบล็อกคำถามนี้เพื่อความปลอดภัย`;
                     } else {
-                        document.getElementById(tempId).innerHTML = `<b>AI:</b> ${result}`;
+                        bubble.innerHTML = `<b>AI:</b> ${responseText}`;
                     }
                 } catch (e) {
-                    document.getElementById(tempId).innerHTML = `<b>AI:</b> ⚠️ การเชื่อมต่อขัดข้อง ลองใหม่อีกครั้งครับ`;
+                    document.getElementById(bubbleId).innerHTML = `<b>AI:</b> ⚠️ การเชื่อมต่อขัดข้องครับ`;
                 }
             }
             scrollToBottom();
@@ -110,10 +115,10 @@
         function addBubble(sender, content, type, id = '') {
             const div = document.createElement('div');
             if (id) div.id = id;
-            div.className = `max-w-[85%] p-4 rounded-2xl text-sm shadow-md transition-all animate-in slide-in-from-bottom-2 ${
+            div.className = `max-w-[85%] p-4 rounded-2xl text-sm shadow-lg ${
                 type === 'user' 
-                ? 'self-end bg-blue-600 text-white rounded-tr-none' 
-                : 'self-start bg-slate-800 text-slate-200 rounded-tl-none border border-slate-700'
+                ? 'self-end bg-sky-600 text-white rounded-tr-none' 
+                : 'self-start bg-slate-700 text-slate-200 rounded-tl-none border border-slate-600'
             }`;
             div.innerHTML = `<b>${sender}:</b> ${content}`;
             chatBox.appendChild(div);
@@ -124,8 +129,8 @@
             chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
         }
 
-        sendBtn.onclick = handleAction;
-        userInput.onkeypress = (e) => { if(e.key === 'Enter') handleAction() };
+        sendBtn.onclick = handleMessage;
+        userInput.onkeypress = (e) => { if(e.key === 'Enter') handleMessage() };
     </script>
 </body>
 </html>
