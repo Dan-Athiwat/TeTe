@@ -3,134 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Creator - Fixed & Fast</title>
+    <title>Exyrel AI 8.0 | Vision Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
-        body { font-family: 'Kanit', sans-serif; background-color: #0f172a; color: #f1f5f9; }
-        .chat-container::-webkit-scrollbar { width: 6px; }
-        .chat-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        .image-glow { box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Fira+Code:wght@400;500&display=swap');
+        
+        :root { --accent: #2563eb; --text-primary: #f1f5f9; }
+        body { font-family: 'Kanit', sans-serif; color: var(--text-primary); margin: 0; overflow: hidden; height: 100vh; display: flex; background-color: #020617; background-size: cover; background-position: center; transition: background-image 1.5s ease-in-out; }
+        #bg-overlay { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.85); z-index: -1; backdrop-filter: blur(5px); }
+
+        /* Sidebar */
+        #sidebar { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); z-index: 1000; width: 300px; background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); display: flex; flex-direction: column; }
+        #sidebar.open { transform: translateX(0); }
+        #menu-btn { position: absolute; left: 24px; top: 14px; z-index: 1001; transition: left 0.4s ease; background: rgba(30, 41, 59, 0.8); padding: 8px; border-radius: 12px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
+
+        .history-item { padding: 12px; margin-bottom: 8px; border-radius: 10px; background: rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; color: #cbd5e1; }
+        .history-item.active { background: rgba(37, 99, 235, 0.2); border-color: #3b82f6; color: white; font-weight: 500; }
+
+        /* Chat Layout */
+        .chat-container { display: flex; flex-direction: column; gap: 1.5rem; padding: 2rem 1rem; scroll-behavior: smooth; }
+        .bubble { max-width: 85%; padding: 1.25rem; border-radius: 1.5rem; font-size: 0.95rem; line-height: 1.6; position: relative; animation: slideIn 0.3s ease-out; box-shadow: 0 4px 6px rgba(0,0,0,0.1); word-wrap: break-word; }
+        .bubble-ai { align-self: flex-start; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255,255,255,0.1); border-bottom-left-radius: 4px; }
+        .bubble-user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+        .bubble img { max-width: 100%; border-radius: 12px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.2); }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Code & Image Gen */
+        .code-block { background: #000; border: 1px solid #334155; border-radius: 12px; margin-top: 10px; overflow: hidden; }
+        .code-header { background: #1e293b; padding: 6px 12px; display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; }
+        pre { padding: 12px; overflow-x: auto; color: #10b981; font-family: 'Fira Code', monospace; font-size: 13px; }
+        .img-card { background: #000; border-radius: 1rem; overflow: hidden; margin-top: 1rem; border: 1px solid #334155; }
+        .generated-image { width: 100%; height: auto; display: block; }
+
+        /* Input & Preview */
+        .input-wrapper { padding: 1.5rem; background: rgba(2, 6, 23, 0.9); border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 10px; }
+        #preview-area { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; min-height: 0; transition: all 0.3s; }
+        #preview-area:empty { display: none; } /* ซ่อนถ้าไม่มีรูป */
+        
+        /* Preview Item Styling */
+        .preview-item { position: relative; width: 60px; height: 60px; flex-shrink: 0; border-radius: 10px; overflow: hidden; border: 2px solid #3b82f6; animation: popIn 0.2s; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .remove-btn { position: absolute; top: 0; right: 0; background: rgba(220, 38, 38, 0.9); color: white; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px; border-bottom-left-radius: 6px; cursor: pointer; }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+        .input-bar { max-width: 1000px; margin: 0 auto; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; display: flex; align-items: center; padding: 8px 16px; gap: 12px; width: 100%; }
+        textarea { flex: 1; background: transparent; border: none; outline: none; color: white; padding: 8px 0; resize: none; max-height: 160px; }
+
+        /* Voice Overlay */
+        #voice-overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.98); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
+        .v-circle { width: 220px; height: 220px; border-radius: 50%; border: 4px solid #3b82f6; display: flex; align-items: center; justify-content: center; position: relative; transition: all 0.3s; }
+        .v-circle.active { border-color: #10b981; box-shadow: 0 0 50px rgba(16, 185, 129, 0.5); transform: scale(1.1); }
+        
+        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body>
 
-    <div class="w-full max-w-2xl bg-[#1e293b] rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[85vh] border border-slate-700">
-        <div class="bg-slate-800 p-4 border-b border-slate-700 flex items-center gap-3">
-            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <h1 class="text-lg font-semibold tracking-wide text-sky-400">AI CREATOR PRO</h1>
+    <div id="bg-overlay"></div>
+
+    <div id="sidebar" class="fixed inset-y-0 left-0 p-6 shadow-2xl">
+        <div class="mt-12 mb-6">
+            <h2 class="text-2xl font-black text-blue-500 tracking-tighter">EXYREL 8.0</h2>
+            <p class="text-[10px] text-slate-400 uppercase tracking-widest">Vision Update</p>
+        </div>
+        <button onclick="createNewChat()" class="w-full p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold mb-4 flex items-center justify-center gap-2 transition active:scale-95"><span>+</span> เริ่มสนทนาใหม่</button>
+        <div id="hist-list" class="flex-1 overflow-y-auto space-y-1 pr-1"></div>
+        <button onclick="clearAllData()" class="mt-4 text-xs text-red-400 hover:text-red-300 underline text-center w-full">ล้างข้อมูลทั้งหมด</button>
+    </div>
+
+    <div class="flex-1 flex flex-col relative h-full">
+        <div id="menu-btn" onclick="toggleSidebar()">
+            <svg width="24" height="24" fill="none" stroke="white" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </div>
 
-        <div id="chat-box" class="chat-container flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-            <div class="self-start bg-slate-700 p-3 rounded-2xl rounded-tl-none border border-slate-600 text-sm max-w-[85%]">
-                🤖 **สวัสดีครับ!** ผมแก้บัคให้แล้ว <br>
-                ลองพิมพ์ว่า **"วาดรูปมังกรน้ำแข็ง"** หรือถามอะไรก็ได้ครับ
-            </div>
-        </div>
+        <header class="h-16 flex items-center justify-center border-b border-slate-700/50 bg-black/20 backdrop-blur-md">
+            <div class="text-lg font-bold tracking-widest uppercase text-white drop-shadow-md">Exyrel AI</div>
+        </header>
 
-        <div class="p-4 bg-slate-800 border-t border-slate-700">
-            <div class="flex gap-2">
-                <input id="user-input" type="text" placeholder="พิมพ์คำถามหรือสั่งวาดรูป..." 
-                    class="flex-1 bg-slate-900 border border-slate-600 rounded-2xl px-5 py-3 outline-none focus:border-sky-500 transition-all text-sm">
-                <button id="send-btn" class="bg-sky-600 hover:bg-sky-500 text-white px-6 py-3 rounded-2xl font-bold transition-all active:scale-95 shadow-lg">
-                    ส่ง
+        <div id="chat-box" class="flex-1 overflow-y-auto chat-container"></div>
+
+        <div class="input-wrapper">
+            <div id="preview-area"></div>
+            
+            <div class="input-bar shadow-2xl">
+                <label class="p-2 cursor-pointer text-slate-400 hover:text-white transition">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <input type="file" id="f-input" class="hidden" multiple accept="image/*" onchange="handleFile(event)">
+                </label>
+                <button onclick="openVoiceMode()" class="p-2 text-slate-400 hover:text-blue-400">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                </button>
+                <textarea id="u-input" rows="1" placeholder="พิมพ์ข้อความ..." oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+                <button id="send-btn" onclick="handleSend()" class="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-500 transition active:scale-90">
+                    <svg width="20" height="20" fill="none" stroke="white" stroke-width="2.5"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                 </button>
             </div>
         </div>
     </div>
 
+    <div id="voice-overlay">
+        <button onclick="closeVoiceMode()" class="absolute top-10 right-10 text-white/50 hover:text-white text-lg font-bold">✕ ปิด</button>
+        <div class="v-circle" id="v-visual"><div class="text-white font-bold text-xl tracking-widest">EXYREL</div></div>
+        <p id="v-status" class="mt-12 text-blue-400 font-medium text-lg animate-pulse">กดปุ่มเริ่มพูด...</p>
+        <button id="v-action-btn" class="mt-8 px-12 py-4 bg-blue-600 rounded-full font-bold shadow-lg text-white hover:bg-blue-500 transition scale-105">เริ่มพูด</button>
+    </div>
+
     <script>
-        const chatBox = document.getElementById('chat-box');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
+        // --- Memory Init ---
+        let allChats = JSON.parse(localStorage.getItem('exyrel_chats')) || [];
+        let currentChatId = localStorage.getItem('exyrel_current_id');
+        if (allChats.length === 0) createNewChat(false);
+        else if (!currentChatId) currentChatId = allChats[0].id;
 
-        async function handleMessage() {
-            const text = userInput.value.trim();
-            if (!text) return;
+        let sidebarOpen = false, filesList = [], isBusy = false;
+        renderSidebar(); loadCurrentChat(); updateTheme(); setInterval(updateTheme, 1800000);
 
-            addBubble('คุณ', text, 'user');
-            userInput.value = '';
-
-            // ตรวจสอบว่าเป็นคำสั่งวาดรูปหรือไม่
-            const isDrawing = /วาด|สร้าง|รูป|ภาพ|image|draw|art/i.test(text);
-
-            if (isDrawing) {
-                const bubbleId = 'ai-' + Date.now();
-                addBubble('AI', '🎨 กำลังเนรมิตภาพให้ตามคำขอครับ...', 'ai', bubbleId);
-
-                // ดึงคำหลักมาวาดรูป
-                let prompt = text.replace(/วาดรูป|สร้างรูป|รูปภาพ|ภาพ|ให้หน่อย|เอาแบบ/g, '').trim();
-                if (!prompt) prompt = "beautiful landscape art";
-
-                const seed = Math.floor(Math.random() * 1000000);
-                // ใช้ Model Flux ที่สวยที่สุด
-                const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}&model=flux&nologo=true`;
-
-                // รอแสดงภาพใต้ข้อความ
-                const bubble = document.getElementById(bubbleId);
-                const imgContainer = document.createElement('div');
-                imgContainer.className = 'mt-3 relative min-h-[200px] flex items-center justify-center bg-slate-800 rounded-xl overflow-hidden';
-                imgContainer.innerHTML = `<div class="text-xs text-slate-500 animate-pulse">กำลังโหลดภาพ...</div>`;
-                
-                const img = new Image();
-                img.src = imageUrl;
-                img.className = 'w-full rounded-xl image-glow opacity-0 transition-opacity duration-1000 relative z-10';
-                
-                img.onload = () => {
-                    imgContainer.innerHTML = ''; // เอาตัวโหลดออก
-                    imgContainer.appendChild(img);
-                    img.classList.remove('opacity-0');
-                    scrollToBottom();
-                };
-
-                img.onerror = () => {
-                    imgContainer.innerHTML = '<div class="p-4 text-xs text-red-400 text-center">❌ ไม่สามารถสร้างภาพนี้ได้เนื่องจากระบบคัดกรองเนื้อหา</div>';
-                };
-
-                bubble.appendChild(imgContainer);
-
-            } else {
-                // ถามตอบปกติ
-                const bubbleId = 'ai-' + Date.now();
-                addBubble('AI', '...', 'ai', bubbleId);
-
-                try {
-                    const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(text)}?model=openai&system=คุณคือAIที่ฉลาดที่สุด_ตอบเป็นภาษาไทย_สั้นๆตรงประเด็น`);
-                    const responseText = await res.text();
-
-                    const bubble = document.getElementById(bubbleId);
-                    // ป้องกันการส่ง Error JSON มาแสดง
-                    if (responseText.includes('"error":')) {
-                        bubble.innerHTML = `<b>AI:</b> ⚠️ ขออภัยครับ ระบบบล็อกคำถามนี้เพื่อความปลอดภัย`;
-                    } else {
-                        bubble.innerHTML = `<b>AI:</b> ${responseText}`;
-                    }
-                } catch (e) {
-                    document.getElementById(bubbleId).innerHTML = `<b>AI:</b> ⚠️ การเชื่อมต่อขัดข้องครับ`;
-                }
+        // --- 1. Image Handling Fixed ---
+        function handleFile(e) {
+            const files = Array.from(e.target.files);
+            // เพิ่มรูปใหม่เข้า list (จำกัดรวมไม่เกิน 10)
+            if (filesList.length + files.length > 10) {
+                alert("เลือกรูปได้สูงสุด 10 รูปครับ");
+                return;
             }
-            scrollToBottom();
+            filesList = [...filesList, ...files];
+            renderPreviews();
+            e.target.value = ''; // รีเซ็ต input เพื่อให้เลือกไฟล์เดิมซ้ำได้ถ้าต้องการ
         }
 
-        function addBubble(sender, content, type, id = '') {
+        function removeFile(index) {
+            filesList.splice(index, 1); // ลบไฟล์จาก array
+            renderPreviews(); // เรนเดอร์ใหม่
+        }
+
+        function renderPreviews() {
+            const area = document.getElementById('preview-area');
+            if (filesList.length === 0) {
+                area.innerHTML = '';
+                return;
+            }
+            area.innerHTML = filesList.map((f, i) => `
+                <div class="preview-item">
+                    <img src="${URL.createObjectURL(f)}">
+                    <div class="remove-btn" onclick="removeFile(${i})">✕</div>
+                </div>
+            `).join('');
+        }
+
+        // --- Core Chat Logic ---
+        async function handleSend() {
+            const input = document.getElementById('u-input');
+            const text = input.value.trim();
+            if ((!text && filesList.length === 0) || isBusy) return;
+
+            isBusy = true;
+            
+            // ส่งข้อความ + รูปภาพฝั่ง User
+            addMessageToMemory('user', text, [...filesList]); // เก็บรูปใน memory (จำลอง URL)
+            renderBubble('user', text, [...filesList]); // แสดงผล
+            
+            // เตรียมส่งให้ AI
+            const hasImages = filesList.length > 0;
+            const imageCount = filesList.length;
+            const tempFiles = [...filesList];
+            
+            // เคลียร์ค่า Input
+            input.value = ''; input.style.height = 'auto';
+            filesList = []; renderPreviews();
+
+            // Loading state
+            const tempId = 'thinking-' + Date.now();
+            renderBubble('ai', '<span class="animate-pulse">กำลังวิเคราะห์...</span>', [], true, tempId);
+
+            let aiResponse = "";
+            
+            // Logic AI Vision Simulation
+            if (hasImages) {
+                // จำลองว่าส่งรูปไปให้ AI ดู (เนื่องจาก Pollinations API เป็น Text-based เราจึงต้องแนบ Context)
+                const promptWithContext = `[System: User sent ${imageCount} images. Describe them generally as if you saw them, and answer this text: "${text}"]`;
+                aiResponse = await fetchTextProcess(promptWithContext);
+            } else if (/วาด|สร้าง|รูป|ภาพ|🎨/i.test(text) && !text.includes('โค้ด')) {
+                aiResponse = await generateImageProcess(text);
+            } else {
+                aiResponse = await fetchTextProcess(text);
+            }
+
+            document.getElementById(tempId).remove();
+            addMessageToMemory('ai', aiResponse); 
+            renderBubble('ai', aiResponse);
+            
+            isBusy = false;
+        }
+
+        // --- Functions ---
+        function renderBubble(role, content, files = [], scroll = true, id = "") {
             const div = document.createElement('div');
             if (id) div.id = id;
-            div.className = `max-w-[85%] p-4 rounded-2xl text-sm shadow-lg ${
-                type === 'user' 
-                ? 'self-end bg-sky-600 text-white rounded-tr-none' 
-                : 'self-start bg-slate-700 text-slate-200 rounded-tl-none border border-slate-600'
-            }`;
-            div.innerHTML = `<b>${sender}:</b> ${content}`;
-            chatBox.appendChild(div);
-            scrollToBottom();
+            div.className = `bubble ${role === 'user' ? 'bubble-user' : 'bubble-ai'}`;
+            
+            let html = role === 'user' ? `<b>คุณ:</b> ${content}` : `<b>AI:</b> ${formatContent(content)}`;
+            
+            // แสดงรูปใน Bubble
+            if (files && files.length > 0) {
+                html += `<div class="grid grid-cols-2 gap-2 mt-2">`;
+                files.forEach(f => {
+                    // ถ้าเป็น File object (ตอนส่งใหม่) หรือ URL string (ตอนโหลดจาก mem)
+                    const src = (f instanceof File) ? URL.createObjectURL(f) : f; 
+                    html += `<img src="${src}" class="rounded-lg border border-white/20">`;
+                });
+                html += `</div>`;
+            }
+            
+            div.innerHTML = html;
+            document.getElementById('chat-box').appendChild(div);
+            if (scroll) scrollToBottom();
         }
 
-        function scrollToBottom() {
-            chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
+        async function fetchTextProcess(text) {
+            try {
+                const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(text)}?system=คุณคือ Exyrel AI ตอบเป็นภาษาไทย ถ้าผู้ใช้ส่งรูปมาให้สมมติว่าคุณเห็นและตอบตามบริบท`);
+                return await res.text();
+            } catch (e) { return "ระบบขัดข้อง"; }
         }
 
-        sendBtn.onclick = handleMessage;
-        userInput.onkeypress = (e) => { if(e.key === 'Enter') handleMessage() };
+        async function generateImageProcess(prompt) {
+            const clean = prompt.replace(/วาด|สร้าง|รูป|ภาพ|ให้หน่อย|🎨/g, '').trim();
+            const url = `https://pollinations.ai/p/${encodeURIComponent(clean)}?width=1024&height=1024&seed=${Date.now()}&model=flux&nologo=true`;
+            return `สร้างรูป <b>"${clean}"</b> เสร็จแล้ว:<div class="img-card"><img src="${url}" class="generated-image"></div>`;
+        }
+
+        // --- Memory & UI Utils ---
+        function addMessageToMemory(role, content, files = []) {
+            const chat = allChats.find(c => c.id == currentChatId);
+            if (chat) {
+                // แปลง File Object เป็น DataURL (เพื่อให้ save ลง localstorage ได้ - *ข้อจำกัด: ขนาดไฟล์ใหญ่จะทำให้เต็มเร็ว*)
+                // ใน demo นี้เราจะเก็บเป็น dummy url ถ้าเป็นไฟล์ใหม่ เพื่อกัน storage เต็ม
+                const fileUrls = files.map(f => (f instanceof File) ? "https://placehold.co/200?text=Image+Saved" : f);
+                chat.messages.push({ role, content, files: fileUrls });
+                if(role === 'user' && chat.messages.length <= 3) chat.title = content.substring(0,20) + "...";
+                saveData(); renderSidebar();
+            }
+        }
+        
+        function formatContent(t) {
+            let withLinks = t.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+            if (withLinks.includes('```')) return withLinks.replace(/```(\w+)?\n([\s\S]*?)```/g, (m,l,c)=>`<div class="code-block"><div class="code-header"><span>${(l||'CODE').toUpperCase()}</span><button onclick="copy(this)">COPY</button></div><pre><code>${c.trim()}</code></pre></div>`).replace(/\n/g,'<br>');
+            return withLinks.replace(/\n/g,'<br>');
+        }
+
+        function createNewChat(load=true) {
+            const newChat = { id: Date.now(), title: "การสนทนาใหม่", messages: [{role:'ai', content:'สวัสดีครับ มีอะไรให้ช่วยไหม?'}] };
+            allChats.unshift(newChat); currentChatId = newChat.id; saveData();
+            if(load) { renderSidebar(); loadCurrentChat(); if(window.innerWidth<768) toggleSidebar(); }
+        }
+        function renderSidebar() { document.getElementById('hist-list').innerHTML = allChats.map(c => `<div onclick="switchChat(${c.id})" class="history-item ${c.id==currentChatId?'active':''}">${c.title}</div>`).join(''); }
+        function switchChat(id) { currentChatId=id; saveData(); renderSidebar(); loadCurrentChat(); }
+        function loadCurrentChat() { document.getElementById('chat-box').innerHTML = ''; allChats.find(c=>c.id==currentChatId)?.messages.forEach(m=>renderBubble(m.role,m.content,m.files,false)); setTimeout(scrollToBottom,100); }
+        function saveData() { localStorage.setItem('exyrel_chats', JSON.stringify(allChats)); localStorage.setItem('exyrel_current_id', currentChatId); }
+        function clearAllData() { if(confirm('ลบทั้งหมด?')) { localStorage.clear(); location.reload(); } }
+        function toggleSidebar() { sidebarOpen=!sidebarOpen; document.getElementById('sidebar').classList.toggle('open',sidebarOpen); document.getElementById('menu-btn').style.left=sidebarOpen?'320px':'24px'; }
+        function updateTheme() { document.body.style.backgroundImage = `url('https://pollinations.ai/p/nature 8k?width=1920&height=1080&seed=${Date.now()}&model=flux')`; }
+        function scrollToBottom() { const b = document.getElementById('chat-box'); b.scrollTop = b.scrollHeight; }
+        function copy(b) { navigator.clipboard.writeText(b.closest('.code-block').querySelector('code').innerText); b.innerText='COPIED'; setTimeout(()=>b.innerText='COPY',2000); }
+
+        // --- Voice Loop Fixed ---
+        const recognizer = (window.SpeechRecognition || window.webkitSpeechRecognition) ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
+        if(recognizer) { recognizer.lang = 'th-TH'; recognizer.continuous = false; }
+        document.getElementById('v-action-btn').onclick = () => { try{recognizer.start();}catch(e){} document.getElementById('v-visual').classList.add('active'); document.getElementById('v-status').innerText = "กำลังฟัง..."; document.getElementById('v-action-btn').style.display='none'; };
+        if(recognizer) {
+            recognizer.onresult = async (e) => {
+                const text = e.results[0][0].transcript;
+                document.getElementById('v-status').innerText = `คุณ: "${text}"`;
+                addMessageToMemory('user', text); renderBubble('user', text);
+                document.getElementById('v-status').innerText = "Exyrel กำลังคิด...";
+                let aiResponse = await fetchTextProcess(text); // Voice ใช้ Text Process เสมอ
+                addMessageToMemory('ai', aiResponse); renderBubble('ai', aiResponse);
+                speak(aiResponse);
+            };
+            recognizer.onend = () => { if(!window.speechSynthesis.speaking) document.getElementById('v-visual').classList.remove('active'); };
+        }
+        function speak(t) {
+            window.speechSynthesis.cancel();
+            const clean = t.replace(/```[\s\S]*?```/g, "มีโค้ดครับ").replace(/https?:\/\/[^\s]+/g, "ลิ้งก์");
+            const u = new SpeechSynthesisUtterance(clean); u.lang = 'th-TH';
+            u.onstart = () => { document.getElementById('v-status').innerText = "Exyrel กำลังพูด..."; document.getElementById('v-visual').classList.add('active'); };
+            u.onend = () => { document.getElementById('v-status').innerText = "ฟังอยู่ครับ..."; try{recognizer.start();}catch(e){} };
+            window.speechSynthesis.speak(u);
+        }
+        function openVoiceMode() { document.getElementById('voice-overlay').style.display = 'flex'; }
+        function closeVoiceMode() { document.getElementById('voice-overlay').style.display = 'none'; if(recognizer) recognizer.stop(); window.speechSynthesis.cancel(); }
+
+        document.getElementById('send-btn').onclick = handleSend;
+        document.getElementById('u-input').onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
     </script>
 </body>
 </html>
